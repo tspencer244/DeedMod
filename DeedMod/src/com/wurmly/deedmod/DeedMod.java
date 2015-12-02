@@ -64,17 +64,23 @@ public class DeedMod implements WurmMod, Configurable, ServerStartedListener {
 				
 				if(settlementsPerSteamID > -1 && c.getPower() < powerOverride) {
 					for(Village v : Villages.getVillages()) {
-						try {
-							Player p = Players.getInstance().getPlayer(v.mayorName);
-							if(p.SteamId.equals(c.SteamId))
-								deedCount++;
-						} catch(NoSuchPlayerException nsp) {
-							String hashCheck = LoginHandler.hashPassword(c.SteamId, LoginHandler.encrypt(LoginHandler.raiseFirstLetter(v.mayorName)));
-							PlayerInfo file = PlayerInfoFactory.createPlayerInfo(v.mayorName);
-							if(hashCheck.equals(file.getPassword())) {
-								deedCount++;
+						if (v.isDisbanding() == false) {
+							try {
+								Player p = Players.getInstance().getPlayer(v.mayorName);
+								
+								if(p.SteamId.equals(c.SteamId)) {
+									deedCount += 1;
+								}
+							} catch(NoSuchPlayerException nsp) {
+								String hashCheck = LoginHandler.hashPassword(c.SteamId, LoginHandler.encrypt(LoginHandler.raiseFirstLetter(v.mayorName)));
+								PlayerInfo file = PlayerInfoFactory.createPlayerInfo(v.mayorName);
+								
+								if(hashCheck.equals(file.getPassword())) {
+									deedCount += 1;
+								}
 							}
 						}
+						
 						if(deedCount >= settlementsPerSteamID) {
 							c.getCommunicator().sendAlertServerMessage("Sorry, only " + String.valueOf(settlementsPerSteamID) + " villages per your SteamID '" + c.SteamId +"'");
 							return null;
